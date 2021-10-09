@@ -1,7 +1,7 @@
 import numpy as np
 import random as rd
 from collections import defaultdict
-from PIL import Image
+from PIL import Image, ImageDraw
 import imageio
 
 
@@ -77,7 +77,7 @@ class MazePercolationModel:
         return False
 
 
-    def output_grid_image(self,img_uri):
+    def output_grid_image(self,img_uri:str)->Image:
         img_grid = self.grid.copy()
         img_grid[img_grid==0] = 255
         img_grid[img_grid==1] = 0
@@ -86,13 +86,29 @@ class MazePercolationModel:
             im = im.convert('RGB')
         imageio.imsave(img_uri, im)
 
+    def pretty_output_grid_image(self, img_uri:str)->Image:
+        output_image = Image.new("RGB", (10*self.size, 10*self.size), "white")
+        draw = ImageDraw.Draw(output_image)
+        
+        for (i,j) in [(i,j) for i in range(self.size) for j in range(self.size)]:       
+            if self.grid[i,j] == 1:
+                draw.rectangle((i*10, j*10, i*10+10, j*10+10), fill="white")
+            else:
+                draw.rectangle((i*10, j*10, i*10+10, j*10+10), outline="black", width=1)
+        
+        step = 10
+ 
+        for (i,j) in [(i,j) for i in range(self.size*10) for j in range(self.size*10)]:
+            draw.point((i*10,j*10), fill="black")
+        output_image.save(img_uri)
+
+
     def get_grid(self)->np.ndarray:
         return self.grid
         
 
     def does_percolate(self)->bool:
-        # build adjacency list
-        
+        # build adjacency list  
         root = list(self.neighbours_map.keys())[0]
         result = self.walk(from_cell=root)
         return result
