@@ -30,7 +30,6 @@ class MazePercolationModel:
             (i,j+1), # e
         ]
         
-
         if j == 0:
             # first column
             can_visit[0] = 0
@@ -79,8 +78,8 @@ class MazePercolationModel:
 
     def output_grid_image(self,img_uri:str)->Image:
         img_grid = self.grid.copy()
-        img_grid[img_grid==0] = 255
-        img_grid[img_grid==1] = 0
+        img_grid[img_grid==0] = 0
+        img_grid[img_grid==1] = 255
         im = Image.fromarray(img_grid)
         if im.mode != 'RGB':
             im = im.convert('RGB')
@@ -90,10 +89,14 @@ class MazePercolationModel:
         output_image = Image.new("RGB", (10*self.size, 10*self.size), "white")
         draw = ImageDraw.Draw(output_image)
         
-        for (i,j) in [(i,j) for i in range(self.size) for j in range(self.size)]:       
-            if self.grid[i,j] == 1:
+        for (i,j) in [(i,j) for i in range(self.size) for j in range(self.size)]:      
+            if self.grid[j,i] == 1:
                 draw.rectangle((i*10, j*10, i*10+10, j*10+10), fill="white")
-            else:
+
+        for (i,j) in [(i,j) for i in range(self.size) for j in range(self.size)]:       
+            if self.grid[j,i] == 0:
+            #    draw.rectangle((i*10, j*10, i*10+10, j*10+10), fill="white")
+            #else:
                 draw.rectangle((i*10, j*10, i*10+10, j*10+10), outline="black", width=1)
         
         step = 10
@@ -134,10 +137,11 @@ class MazePercolationModel:
                 visited.add(succ)
         
         return queue
-        
 
     def get_percolation_path(self)->list:
         root = list(self.neighbours_map.keys())[0]
+        print('root')
+        print(root)
         self.percolation_path = self.find_percolation_path(self.neighbours_map,from_cell=root)
         return self.percolation_path
 
@@ -156,3 +160,22 @@ class MazePercolationModel:
         else:
             print('there is no percolation path to print')
 
+
+    def output_pretty_percolation_path_image(self, img_uri:str)->Image:
+        output_image = Image.new("RGB", (10*self.size, 10*self.size), "white")
+        draw = ImageDraw.Draw(output_image)
+        
+        for (i,j) in [(i,j) for i in range(self.size) for j in range(self.size)]:      
+            if self.grid[j,i] == 1:
+                draw.rectangle((i*10, j*10, i*10+10, j*10+10), fill="white")
+
+        for (cell_j, cell_i) in self.percolation_path:
+                draw.rectangle((cell_i*10, cell_j*10, cell_i*10+10, cell_j*10+10), fill="gray")
+ 
+        for (i,j) in [(i,j) for i in range(self.size) for j in range(self.size)]:       
+            if self.grid[j,i] == 0:
+                draw.rectangle((i*10, j*10, i*10+10, j*10+10), outline="black", width=1)
+       
+        for (i,j) in [(i,j) for i in range(self.size*10) for j in range(self.size*10)]:
+            draw.point((i*10,j*10), fill="black")
+        output_image.save(img_uri)
