@@ -141,4 +141,3 @@ class PercolationModel:
             imageio.imsave(img_uri, im)
         else:
             print('there is no percolation path to print')
-

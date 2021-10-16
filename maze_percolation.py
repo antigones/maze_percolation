@@ -8,7 +8,7 @@ import imageio
 class MazePercolationModel:
 
     def __init__(self, p, size):
-        #np.random.seed(42)
+        #np.random.seed(100)
         n = 1
         self.p = p
         self.size = size
@@ -16,7 +16,8 @@ class MazePercolationModel:
         self.percolation_path = None
         self.neighbours_map = self.build_adjacency_map(self.grid)
 
-    def assess_neighbours(self,grid:np.ndarray,neighbours_map:dict,size:int,i:int,j:int) -> int:
+
+    def assess_neighbours(self,grid:np.ndarray,neighbours_map:dict,size:int,i:int,j:int) -> dict:
         # n,nw,w,sw,s,se,e,ne
         # 0,1 ,2, 3,4, 5,6,7
         can_visit = [
@@ -89,18 +90,33 @@ class MazePercolationModel:
         output_image = Image.new("RGB", (10*self.size, 10*self.size), "white")
         draw = ImageDraw.Draw(output_image)
         
-        for (i,j) in [(i,j) for i in range(self.size) for j in range(self.size)]:      
-            if self.grid[j,i] == 1:
-                draw.rectangle((i*10, j*10, i*10+10, j*10+10), fill="white")
+        for (i,j) in [(i,j) for i in range(self.size) for j in range(self.size)]:
+            if self.grid[i,j] == 1:
+                draw.rectangle((j*10, i*10, j*10+10, i*10+10), fill="white")
 
         for (i,j) in [(i,j) for i in range(self.size) for j in range(self.size)]:       
-            if self.grid[j,i] == 0:
-            #    draw.rectangle((i*10, j*10, i*10+10, j*10+10), fill="white")
-            #else:
-                draw.rectangle((i*10, j*10, i*10+10, j*10+10), outline="black", width=1)
+            if self.grid[i,j] == 0:
+                draw.rectangle((j*10, i*10, j*10+10, i*10+10), outline="black", width=1)
+
+        # additional horz lines
+        for (i,j) in [(i,j) for i in range(1,self.size-1) for j in range(1,self.size-1)]:
+            if self.grid[i-1,j-1] and self.grid[i-1,j] and self.grid[i-1,j+1] and self.grid[i,j-1] and self.grid[i,j] and self.grid[i,j+1]:
+                draw.line((j*10,i*10,(j*10)+10,i*10),fill="black")
+
+        # additional vert lines
+        for (i,j) in [(i,j) for i in range(0,self.size-1) for j in range(0,self.size-1)]:
+            if self.grid[i,j-1] and self.grid[i-1,j-1] and self.grid[i-1,j] and self.grid[i,j] and self.grid[i+1,j-1] and self.grid[i+1,j]:
+                draw.line((j*10,i*10,j*10,(i*10)+10),fill="black")
+
+        # last row is special
+        for j in range(0,self.size):
+            i = self.size-1
+            if self.grid[i,j-1] and self.grid[i,j] and self.grid[i,j+1] and self.grid[i+1,j-1] and self.grid[i+1,j] and self.grid[i+1,j+1]: 
+                draw.line((j*10,i*10,j*10,(i*10)+10),fill="black")
+                
+        # last column is special
         
-        step = 10
- 
+
         for (i,j) in [(i,j) for i in range(self.size*10) for j in range(self.size*10)]:
             draw.point((i*10,j*10), fill="black")
         output_image.save(img_uri)
@@ -110,11 +126,19 @@ class MazePercolationModel:
         return self.grid
         
 
-    def does_percolate(self)->bool:
-        # build adjacency list  
-        root = list(self.neighbours_map.keys())[0]
-        result = self.walk(from_cell=root)
-        return result
+    def does_percolate(self)->tuple:
+
+        # fluid can percolate from any of the upper cells    
+        filtered_dictionary = {(a,b): value for (a,b), value in self.neighbours_map.items() if a == 0}
+        result = False
+        perc_root = []
+        for key in filtered_dictionary.keys():
+            root = key
+            is_walkable = self.walk(from_cell=root)
+            if is_walkable:
+                perc_root.append(key)
+            result = result or self.walk(from_cell=root)
+        return (perc_root, result)
 
     def find_percolation_path(self, neighbours_map:dict,from_cell:set)->list:
         # just a BFS on the adjacency list, keeping track of the path
@@ -138,10 +162,9 @@ class MazePercolationModel:
         
         return queue
 
-    def get_percolation_path(self)->list:
-        root = list(self.neighbours_map.keys())[0]
-        print('root')
-        print(root)
+    def get_percolation_path(self, root)->list:
+        
+
         self.percolation_path = self.find_percolation_path(self.neighbours_map,from_cell=root)
         return self.percolation_path
 
