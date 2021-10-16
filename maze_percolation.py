@@ -8,7 +8,7 @@ import imageio
 class MazePercolationModel:
 
     def __init__(self, p, size):
-        np.random.seed(100)
+        #np.random.seed(100)
         n = 1
         self.p = p
         self.size = size
@@ -96,7 +96,7 @@ class MazePercolationModel:
 
         for (i,j) in [(i,j) for i in range(self.size) for j in range(self.size)]:       
             if self.grid[i,j] == 0:
-                draw.rectangle((j*10, i*10, j*10+10, i*10+10), outline="black", fill="black",width=1)
+                draw.rectangle((j*10, i*10, j*10+10, i*10+10), outline="black",width=1)
 
         # additional horz lines
         for (i,j) in [(i,j) for i in range(1,self.size-1) for j in range(1,self.size-1)]:
@@ -108,7 +108,6 @@ class MazePercolationModel:
             if self.grid[i,j-1] and self.grid[i-1,j-1] and self.grid[i-1,j] and self.grid[i,j] and self.grid[i+1,j-1] and self.grid[i+1,j]:
                 draw.line((j*10,i*10,j*10,(i*10)+10),fill="black")
 
-
         # last row is special
         for j in range(1,self.size-1):
             i = self.size-2
@@ -119,12 +118,10 @@ class MazePercolationModel:
         for i in range(1,self.size-1):
             j = self.size-2
             
-            if self.grid[i-1,j] and self.grid[i-1,j+1] and self.grid[i,j] and self.grid[i,j+1] and self.grid[i+1,j] and self.grid[i+1,j+1]: 
-                print("drawing")
-                print(str(j)+":"+str(i))
+            if self.grid[i-1,j] and self.grid[i-1,j+1] and self.grid[i,j] and self.grid[i,j+1] and self.grid[i+1,j] and self.grid[i+1,j+1]:
                 draw.line((j*10+10,i*10,j*10+10,i*10+10),fill="black")
-        #draw.line((90,60,90,70),fill="black")
-        # draw point lattice
+
+        # draw points lattice
         for (i,j) in [(i,j) for i in range(self.size*10) for j in range(self.size*10)]:
             draw.point((i*10,j*10), fill="black")
         output_image.save(img_uri)
