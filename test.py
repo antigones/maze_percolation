@@ -11,8 +11,8 @@ def calculate_tipping_point():
         print(str(p))
         p_c = []
         for i in range(tries):
-            pm = maze_site_percolation.MazePercolationModel(p=p, size=25)
-            (percolation_path_root_list,does_maze_percolate) = pm.does_percolate()
+            pm = maze_site_percolation.MazeSitePercolationModel(p=p, size=25)
+            does_maze_percolate = pm.does_percolate()
             p_c.append(does_maze_percolate)
         
         stats[p] = p_c
@@ -21,8 +21,8 @@ def calculate_tipping_point():
         print(str(p))
         p_c = []
         for i in range(tries):
-            pm = maze_site_percolation.MazePercolationModel(p=p, size=25)
-            (percolation_path_root_list,does_maze_percolate) = pm.does_percolate()
+            pm = maze_site_percolation.MazeSitePercolationModel(p=p, size=25)
+            does_maze_percolate = pm.does_percolate()
             p_c.append(does_maze_percolate)
         
         stats[p] = p_c
@@ -31,8 +31,8 @@ def calculate_tipping_point():
         print(str(p))
         p_c = []
         for i in range(tries):
-            pm = maze_site_percolation.MazePercolationModel(p=p, size=25)
-            (percolation_path_root_list,does_maze_percolate) = pm.does_percolate()
+            pm = maze_site_percolation.MazeSitePercolationModel(p=p, size=25)
+            does_maze_percolate = pm.does_percolate()
             p_c.append(does_maze_percolate)
         
         stats[p] = p_c
@@ -41,21 +41,16 @@ def calculate_tipping_point():
 
 
 def main():
-    
     pm = maze_site_percolation.MazeSitePercolationModel(p=0.6, size=25)
     does_maze_percolate = pm.does_percolate()
     print('does_maze_percolate: ',does_maze_percolate)
-    #(percolation_path_root_list,does_maze_percolate) = pm.does_percolate()
     pm.output_grid_image('site_percolation_maze_grid.gif')
     pm.pretty_output_grid_image('site_percolation_maze_nowalls.gif',add_walls=False)
     pm.pretty_output_grid_image('site_percolation_maze_walls.gif',add_walls=True)
-    #print('does_maze_percolate: ',does_maze_percolate)
-    #if does_maze_percolate:
-    #    percolation_path_root = random.choice(percolation_path_root_list)
-    #    perc_path = pm.get_percolation_path(percolation_path_root)
-     
-    #    pm.output_pretty_percolation_path_image('maze_percolation_path.gif')
-    
+    rand_perc_path = pm.get_random_percolation_path()
+    pm.output_pretty_percolation_path_image(rand_perc_path,'maze_percolation_path.gif')
+
+    calculate_tipping_point()
 
 if __name__ == '__main__':
     main()

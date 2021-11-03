@@ -2,6 +2,7 @@ import numpy as np
 from collections import defaultdict
 from PIL import Image, ImageDraw
 import imageio
+import random
 
 
 class MazeSitePercolationModel:
@@ -60,7 +61,6 @@ class MazeSitePercolationModel:
 
     def find_percolation_path(self, from_cell:set)->list:
         # just a BFS on the adjacency list, keeping track of the path
-        
         visited = set()
         queue = [[from_cell]]
         while len(queue) > 0:
@@ -83,7 +83,7 @@ class MazeSitePercolationModel:
     def get_grid(self)->np.ndarray:
         return self.grid
 
-    def does_percolate(self):
+    def does_percolate(self)->bool:
         result = False
         for key in self.percolation_paths.keys():
             result = result or len(self.percolation_paths[key]) > 0
@@ -100,12 +100,18 @@ class MazeSitePercolationModel:
             percolation_results.update({root:percolation_path_for_root})
         return percolation_results
 
+    def get_random_percolation_path(self)->list:
+        # choose a random percolating root
+        roots_with_path = {k: v for k, v in self.percolation_paths.items() if len(v) > 0}
+        if len(roots_with_path) > 0:
+            rand_root = random.choice(list(roots_with_path.keys()))
+            return self.get_percolation_path(rand_root)
+        else:
+            # no percolable root, return empty path (no path here)
+            return []
 
     def get_percolation_path(self, root)->list:
-        path = []
-        
-
-        return path
+        return self.percolation_paths[root]
 
     ## printing functions ##
 
@@ -175,7 +181,7 @@ class MazeSitePercolationModel:
             print('there is no percolation path to print')
 
 
-    def output_pretty_percolation_path_image(self, img_uri:str)->Image:
+    def output_pretty_percolation_path_image(self, percolation_path, img_uri:str)->Image:
         output_image = Image.new("RGB", (10*self.size, 10*self.size), "white")
         draw = ImageDraw.Draw(output_image)
         
@@ -183,7 +189,7 @@ class MazeSitePercolationModel:
             if self.grid[j,i] == 1:
                 draw.rectangle((i*10, j*10, i*10+10, j*10+10), fill="white")
 
-        for (cell_j, cell_i) in self.percolation_path:
+        for (cell_j, cell_i) in percolation_path:
                 draw.rectangle((cell_i*10, cell_j*10, cell_i*10+10, cell_j*10+10), fill="gray")
  
         for (i,j) in [(i,j) for i in range(self.size) for j in range(self.size)]:       
