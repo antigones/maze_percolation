@@ -4,7 +4,7 @@ import random
 import numpy as np
 
 def calculate_tipping_point():
-    
+    # ratio of percolating mazes 
     tries = 5000
     stats = {}
     for p in np.arange(0.0,0.5,0.1):
@@ -50,7 +50,7 @@ def main():
     rand_perc_path = pm.get_random_percolation_path()
     pm.output_pretty_percolation_path_image(rand_perc_path,'maze_percolation_path.gif')
 
-    calculate_tipping_point()
+    #calculate_tipping_point()
 
 if __name__ == '__main__':
     main()

@@ -128,74 +128,79 @@ class MazeSitePercolationModel:
         output_image = Image.new("RGB", (10*self.size, 10*self.size), "white")
         draw = ImageDraw.Draw(output_image)
         
-        for (i,j) in [(i,j) for i in range(self.size) for j in range(self.size)]:
-            if self.grid[i,j] == 1:
-                draw.rectangle((j*10, i*10, j*10+10, i*10+10), fill="white")
-
-        for (i,j) in [(i,j) for i in range(self.size) for j in range(self.size)]:       
-            if self.grid[i,j] == 0:
-                draw.rectangle((j*10, i*10, j*10+10, i*10+10), outline="black",width=1)
+        self.draw_empty_cells(draw)
+        self.draw_full_cells(draw)
 
         if add_walls:
-            # additional horz lines
-            for (i,j) in [(i,j) for i in range(1,self.size-1) for j in range(1,self.size-1)]:
-                if self.grid[i-1,j-1] and self.grid[i-1,j] and self.grid[i-1,j+1] and self.grid[i,j-1] and self.grid[i,j] and self.grid[i,j+1]:
-                    draw.line((j*10,i*10,(j*10)+10,i*10),fill="black")
-
-            # additional vert lines
-            for (i,j) in [(i,j) for i in range(0,self.size-1) for j in range(0,self.size-1)]:
-                if self.grid[i,j-1] and self.grid[i-1,j-1] and self.grid[i-1,j] and self.grid[i,j] and self.grid[i+1,j-1] and self.grid[i+1,j]:
-                    draw.line((j*10,i*10,j*10,(i*10)+10),fill="black")
-
-            # last row is special
-            for j in range(1,self.size-1):
-                i = self.size-2
-                if self.grid[i,j-1] and self.grid[i,j] and self.grid[i,j+1] and self.grid[i+1,j-1] and self.grid[i+1,j] and self.grid[i+1,j+1]: 
-                    draw.line((j*10,i*10+10,j*10+10,i*10+10),fill="black")
-
-            # last column is special
-            for i in range(0,self.size-1):
-                j = self.size-2
-                
-                if self.grid[i-1,j] and self.grid[i-1,j+1] and self.grid[i,j] and self.grid[i,j+1] and self.grid[i+1,j] and self.grid[i+1,j+1]:
-                    draw.line((j*10+10,i*10,j*10+10,i*10+10),fill="black")
+            self.draw_walls(draw)
 
         # draw points lattice
-        for (i,j) in [(i,j) for i in range(self.size*10) for j in range(self.size*10)]:
-            draw.point((i*10,j*10), fill="black")
+        self.draw_lattice(draw)
         output_image.save(img_uri)
 
-    def output_percolation_path_image(self,img_uri):
-        if len(self.percolation_path) > 0:
-            img_grid = self.grid.copy()
+    def output_percolation_path_image(self,percolation_path:list,img_uri:str):
+        img_grid = self.grid.copy()
+        img_grid[img_grid==0] = 255
+        img_grid[img_grid==1] = 0
+        for (cell_i, cell_j) in percolation_path:
+            img_grid[cell_i, cell_j] = 50
+        im = Image.fromarray(img_grid)
+        if im.mode != 'RGB':
+            im = im.convert('RGB')
+        imageio.imsave(img_uri, im)
+
+    def draw_walls(self, draw:ImageDraw):
+        # additional horz lines
+        for (i,j) in [(i,j) for i in range(1,self.size-1) for j in range(1,self.size-1)]:
+            if self.grid[i-1,j-1] and self.grid[i-1,j] and self.grid[i-1,j+1] and self.grid[i,j-1] and self.grid[i,j] and self.grid[i,j+1]:
+                draw.line((j*10,i*10,(j*10)+10,i*10),fill="black")
+
+        # additional vert lines
+        for (i,j) in [(i,j) for i in range(0,self.size-1) for j in range(0,self.size-1)]:
+            if self.grid[i,j-1] and self.grid[i-1,j-1] and self.grid[i-1,j] and self.grid[i,j] and self.grid[i+1,j-1] and self.grid[i+1,j]:
+                draw.line((j*10,i*10,j*10,(i*10)+10),fill="black")
+
+        # last row is special
+        for j in range(1,self.size-1):
+            i = self.size-2
+            if self.grid[i,j-1] and self.grid[i,j] and self.grid[i,j+1] and self.grid[i+1,j-1] and self.grid[i+1,j] and self.grid[i+1,j+1]: 
+                draw.line((j*10,i*10+10,j*10+10,i*10+10),fill="black")
+
+        # last column is special
+        for i in range(0,self.size-1):
+            j = self.size-2
             
-            img_grid[img_grid==0] = 255
-            img_grid[img_grid==1] = 0
-            for (cell_i, cell_j) in self.percolation_path:
-                img_grid[cell_i, cell_j] = 50
-            im = Image.fromarray(img_grid)
-            if im.mode != 'RGB':
-                im = im.convert('RGB')
-            imageio.imsave(img_uri, im)
-        else:
-            print('there is no percolation path to print')
+            if self.grid[i-1,j] and self.grid[i-1,j+1] and self.grid[i,j] and self.grid[i,j+1] and self.grid[i+1,j] and self.grid[i+1,j+1]:
+                draw.line((j*10+10,i*10,j*10+10,i*10+10),fill="black")
 
-
-    def output_pretty_percolation_path_image(self, percolation_path, img_uri:str)->Image:
-        output_image = Image.new("RGB", (10*self.size, 10*self.size), "white")
-        draw = ImageDraw.Draw(output_image)
-        
+    def draw_empty_cells(self, draw:ImageDraw):
         for (i,j) in [(i,j) for i in range(self.size) for j in range(self.size)]:      
             if self.grid[j,i] == 1:
                 draw.rectangle((i*10, j*10, i*10+10, j*10+10), fill="white")
 
-        for (cell_j, cell_i) in percolation_path:
-                draw.rectangle((cell_i*10, cell_j*10, cell_i*10+10, cell_j*10+10), fill="gray")
- 
+    def draw_full_cells(self, draw:ImageDraw):
         for (i,j) in [(i,j) for i in range(self.size) for j in range(self.size)]:       
             if self.grid[j,i] == 0:
                 draw.rectangle((i*10, j*10, i*10+10, j*10+10), outline="black", width=1)
-       
+
+    def draw_lattice(self, draw:ImageDraw):
         for (i,j) in [(i,j) for i in range(self.size*10) for j in range(self.size*10)]:
             draw.point((i*10,j*10), fill="black")
+
+    def draw_path(self, draw:ImageDraw, percolation_path:list):
+        for (cell_j, cell_i) in percolation_path:
+                draw.rectangle((cell_i*10, cell_j*10, cell_i*10+10, cell_j*10+10), fill="gray")
+    
+
+    def output_pretty_percolation_path_image(self, percolation_path:list, img_uri:str)->Image:
+        output_image = Image.new("RGB", (10*self.size, 10*self.size), "white")
+        draw = ImageDraw.Draw(output_image)
+        
+        self.draw_empty_cells(draw)
+
+        self.draw_path(draw, percolation_path)
+        
+        self.draw_full_cells(draw)
+        self.draw_lattice(draw)
+
         output_image.save(img_uri)
