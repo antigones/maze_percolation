@@ -14,7 +14,6 @@ def calculate_tipping_point():
             pm = maze_site_percolation.MazeSitePercolationModel(p=p, size=25)
             does_maze_percolate = pm.does_percolate()
             p_c.append(does_maze_percolate)
-        
         stats[p] = p_c
 
     for p in np.arange(0.5,0.7,0.0125):
@@ -24,7 +23,6 @@ def calculate_tipping_point():
             pm = maze_site_percolation.MazeSitePercolationModel(p=p, size=25)
             does_maze_percolate = pm.does_percolate()
             p_c.append(does_maze_percolate)
-        
         stats[p] = p_c
 
     for p in np.arange(0.7,1.0,0.1):
@@ -34,8 +32,8 @@ def calculate_tipping_point():
             pm = maze_site_percolation.MazeSitePercolationModel(p=p, size=25)
             does_maze_percolate = pm.does_percolate()
             p_c.append(does_maze_percolate)
-        
         stats[p] = p_c
+        
     for p in stats:
         print(str(p)+";"+str(np.mean(stats[p])))
 
